@@ -1,0 +1,140 @@
+library(ape)
+library(phytools)
+data<-read.table('data_lgt',header=T)
+tree.all<-read.nexus('consensus_trees.txt')
+
+########################
+# RUN STOCHASTIC MAPPING
+########################
+
+likelihoods<-data.frame()
+
+likelihoods[1:length(tree.all),1]<-rep("NA",length(tree.all))
+
+for(j in 2:dim(data)[2]){
+for(i in 1:length(tree.all)){
+tree<-tree.all[[i]]
+tree<-drop.tip(tree,tree$tip.label[is.na(match(tree$tip.label,data[,1]))])
+data<-data[match(tree$tip.label,data[,1]),]
+likelihoods[i,j]<-ace(data[,j],tree,type="discrete",model="ARD")$loglik
+}
+}
+write.table(likelihoods,"likelihoods",quote=F,row.names=F,col.names=F)
+
+
+########################
+# RUN STOCHASTIC MAPPING
+########################
+
+likelihoods<-read.table('likelihoods',header=F)
+
+treechoice<-c()
+for(j in 1:dim(data)[2]){
+treechoice[j]<-which(likelihoods[,j]==max(likelihoods[,j]))
+}
+
+all.times.lgt.zam1505<-data.frame()
+all.times.lgt.aus1<-data.frame()
+all.times.lgt.lo4<-data.frame()
+all.times.lgt.kwt<-data.frame()
+all.times.lgt.mrl48<-data.frame()
+
+
+for(l in 1:100){
+times.lgt.zam1505<-c()
+times.lgt.aus1<-c()
+times.lgt.lo4<-c()
+times.lgt.kwt<-c()
+times.lgt.mrl48<-c()
+
+
+for(j in 2:dim(data)[2]){
+
+# make stochastic mapping
+    tree<-tree.all[[treechoice[j]]]
+    tree<-drop.tip(tree,tree$tip.label[is.na(match(tree$tip.label,data[,1]))])
+    vec1<-data[,j]
+    names(vec1)<-data$individual
+    simmap.tree<-make.simmap(tree,vec1,nsim=1,model="ARD",pi=c(0.9,0.1))
+
+#ZAM1505
+    if(vec1["semialata_ZAM15-05-10"]==1){
+        dropped.tree<-drop.tip.simmap(simmap.tree,tree$tip.label[-c(which(tree$tip.label=="semialata_ZAM15-05-10"),which(tree$tip.label=="cimicina_A.cim"))])
+        times.lgt.tree<-c()
+        vec2<-dropped.tree$maps[which(dropped.tree$tip.label=="semialata_ZAM15-05-10")][[1]]
+        if(length(vec2)>2){
+            times.lgt.zam1505<-c(times.lgt.zam1505,NA)
+            }
+        else{
+            times.lgt.zam1505<-c(times.lgt.zam1505,vec2[-1])
+            }
+    }
+
+#AUS1
+    if(vec1["semialata_AUS1"]==1){
+        dropped.tree<-drop.tip.simmap(simmap.tree,tree$tip.label[-c(which(tree$tip.label=="semialata_AUS1"),which(tree$tip.label=="cimicina_A.cim"))])
+        times.lgt.tree<-c()
+        vec2<-dropped.tree$maps[which(dropped.tree$tip.label=="semialata_AUS1")][[1]]
+        if(length(vec2)>2){
+            times.lgt.aus1<-c(times.lgt.aus1,NA)
+            }
+        else{
+            times.lgt.aus1<-c(times.lgt.aus1,vec2[-1])
+            }
+    }
+
+#LO4
+    if(vec1["semialata_L04B"]==1){
+        dropped.tree<-drop.tip.simmap(simmap.tree,tree$tip.label[-c(which(tree$tip.label=="semialata_L04B"),which(tree$tip.label=="cimicina_A.cim"))])
+        times.lgt.tree<-c()
+        vec2<-dropped.tree$maps[which(dropped.tree$tip.label=="semialata_L04B")][[1]]
+        if(length(vec2)>2){
+            times.lgt.lo4<-c(times.lgt.lo4,NA)
+            }
+        else{
+            times.lgt.lo4<-c(times.lgt.lo4,vec2[-1])
+            }
+    }
+
+#KWT
+    if(vec1["semialata_KWT3"]==1){
+        dropped.tree<-drop.tip.simmap(simmap.tree,tree$tip.label[-c(which(tree$tip.label=="semialata_KWT3"),which(tree$tip.label=="cimicina_A.cim"))])
+        times.lgt.tree<-c()
+        vec2<-dropped.tree$maps[which(dropped.tree$tip.label=="semialata_KWT3")][[1]]
+        if(length(vec2)>2){
+            times.lgt.kwt<-c(times.lgt.kwt,NA)
+            }
+        else{
+            times.lgt.kwt<-c(times.lgt.kwt,vec2[-1])
+            }
+    }
+
+#KWT
+    if(vec1["angusta_MRL48"]==1){
+        dropped.tree<-drop.tip.simmap(simmap.tree,tree$tip.label[-c(which(tree$tip.label=="angusta_MRL48"),which(tree$tip.label=="cimicina_A.cim"))])
+        times.lgt.tree<-c()
+        vec2<-dropped.tree$maps[which(dropped.tree$tip.label=="angusta_MRL48")][[1]]
+        if(length(vec2)>2){
+            times.lgt.mrl48<-c(times.lgt.mrl48,NA)
+            }
+        else{
+            times.lgt.mrl48<-c(times.lgt.mrl48,vec2[-1])
+            }
+    }
+}
+
+all.times.lgt.zam1505[1:length(times.lgt.zam1505),l]<-times.lgt.zam1505
+all.times.lgt.aus1[1:length(times.lgt.aus1),l]<-times.lgt.aus1
+all.times.lgt.lo4[1:length(times.lgt.lo4),l]<-times.lgt.lo4
+all.times.lgt.kwt[1:length(times.lgt.kwt),l]<-times.lgt.kwt
+all.times.lgt.mrl48[1:length(times.lgt.mrl48),l]<-times.lgt.mrl48
+
+write.table(all.times.lgt.zam1505,"all.times.lgt.zam1505",quote=F,row.names=F,col.names=F)
+write.table(all.times.lgt.aus1,"all.times.lgt.aus1",quote=F,row.names=F,col.names=F)
+write.table(all.times.lgt.kwt,"all.times.lgt.kwt",quote=F,row.names=F,col.names=F)
+write.table(all.times.lgt.lo4,"all.times.lgt.lo4",quote=F,row.names=F,col.names=F)
+write.table(all.times.lgt.mrl48,"all.times.lgt.mrl48",quote=F,row.names=F,col.names=F)
+
+}
+
+q("no")

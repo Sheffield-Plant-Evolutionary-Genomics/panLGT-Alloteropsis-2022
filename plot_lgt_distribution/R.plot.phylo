@@ -1,0 +1,98 @@
+
+#################################
+# 1. assign individuals to groups
+#################################
+
+cladeIV<-c("semialata_AUS1","semialata_AUS16-04-03","semialata_AUS16-16-03","semialata_AUS16-16-04","semialata_AUS16-33-02","semialata_AUS16-33-03","semialata_BF-2","semialata_China-Gin1","semialata_Maj-3","semialata_SRL17-02-03","semialata_TW10","semialata_PHIL16-01")
+cladeIII<-c("semialata_ZAM15-05-10","semialata_ZAM19-46-19","semialata_ZAM19-46-10","semialata_ZAM17-01-1_7","semialata_TAN16-03-08","semialata_L02O","semialata_TAN16-03-01")
+cladeII<-c("semialata_ZAM17-23-05","semialata_ZAM17-05-03","semialata_ZAM15-03-03","semialata_ZAM15-07-19","semialata_L01A","semialata_TAN16-02-04","semialata_L04A","semialata_L04B")
+cladeI<-c("semialata_ZIM15-04-61","semialata_CRL4-6","semialata_BL","semialata_GMT9","semialata_JM","semialata_MSV2365","semialata_KWT3")
+angusta<-c("angusta_MRL48","angusta_ZAM1950-10","angusta_ZAM1930-17","angusta_4003","angusta_TAN1601","angusta_4006","angusta_ZAM1720-04")
+
+library(ape)
+library(phytools)
+tree<-read.nexus('consensus.tre')
+block<-read.table('block.txt')$V1
+donor<-read.table('donor.txt')$V1
+data<-read.table('data_lgt',header=T)
+#tree<-drop.tip(tree,tree$tip.label[is.na(match(tree$tip.label,data[,1]))])
+data<-data[match(tree$tip.label,data[,1]),]
+
+
+##################
+# 2. Plot as genes
+##################
+
+for(i in 1:dim(data)[1]){
+    for(j in 2:dim(data)[2]){
+if(data[i,1] %in% cladeIII & data[i,j]==1){data[i,j]<-7}
+if(data[i,1] %in% cladeIV & data[i,j]==1){data[i,j]<-2}
+if(data[i,1] %in% cladeII & data[i,j]==1){data[i,j]<-3}
+if(data[i,1] %in% cladeI & data[i,j]==1){data[i,j]<-4}
+if(data[i,1] %in% angusta & data[i,j]==1){data[i,j]<-6}
+}
+}
+
+references<-c()
+references[data[,1] %in% c("semialata_ZAM15-05-10","semialata_AUS1","semialata_L04B","semialata_KWT3","angusta_MRL48")]<-1
+references[!data[,1] %in% c("semialata_ZAM15-05-10","semialata_AUS1","semialata_L04B","semialata_KWT3","angusta_MRL48")]<-0
+
+pdf("lgt_distribution.pdf",useDingbats=F,width=28,height=8)
+plot.phylo(tree,show.tip.label=F,x.lim=c(0,110),edge.width=2)
+tiplabels(pch=16,col=references,adj=0.8,cex=1.6)
+for(i in 2:dim(data)[2]){
+tiplabels(pch=22,bg=data[,i],col="grey",adj=(i+1)/2,cex=1.6)
+}
+dev.off()
+
+
+###################
+# 3. Plot as blocks
+###################
+
+for(i in 1:dim(data)[1]){
+    for(j in 2:dim(data)[2]){
+if(data[i,1] %in% cladeIII & data[i,j]==1){data[i,j]<-7}
+if(data[i,1] %in% cladeIV & data[i,j]==1){data[i,j]<-2}
+if(data[i,1] %in% cladeII & data[i,j]==1){data[i,j]<-3}
+if(data[i,1] %in% cladeI & data[i,j]==1){data[i,j]<-4}
+if(data[i,1] %in% angusta & data[i,j]==1){data[i,j]<-6}
+}
+}
+
+donor[donor=="Andropogoneae"]<-"blue"
+donor[donor=="Cenchrinae"]<-"red"
+donor[donor=="Melinidinae"]<-"orange"
+donor[donor=="Chloridoideae"]<-"cyan"
+donor[donor=="Tristachyideae"]<-"magenta"
+donor[donor=="Danthonioideae"]<-"green"
+donor[donor=="Lasiacis"]<-"black"
+donor[donor=="Panicum"]<-"pink"
+
+references<-c()
+references[data[,1] %in% c("semialata_ZAM15-05-10","semialata_AUS1","semialata_L04B","semialata_KWT3","angusta_MRL48")]<-1
+references[!data[,1] %in% c("semialata_ZAM15-05-10","semialata_AUS1","semialata_L04B","semialata_KWT3","angusta_MRL48")]<-0
+
+
+k<-1
+pdf("lgt_distribution_blocks.pdf",useDingbats=F,width=41,height=8)
+plot.phylo(tree,show.tip.label=F,x.lim=c(0,176),edge.width=2)
+tiplabels(pch=16,col=references,adj=0.8,cex=1.6)
+j<-2
+for(i in 2:dim(data)[2]){
+if(i==2){
+    j<-j+2
+    text(k,x=(j+1)/2+11,y=46)
+    k<-k+1
+    }
+if(i>2 && block[i-1]!=block[i-2]){
+    j<-j+2
+    text(k,x=(j+1)/2+11,y=46)
+    k<-k+1
+    }
+tiplabels(pch=22,bg=data[,i],col="grey",adj=(j+1)/2,cex=1.6)
+j<-j+1
+points(x=(j+1)/2+10.46,y=0,pch=22,bg=donor[i-1],cex=1.6)
+}
+dev.off()
+

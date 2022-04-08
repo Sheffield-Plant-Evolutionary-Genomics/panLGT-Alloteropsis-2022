@@ -1,0 +1,61 @@
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+coordinates<-read.table('coordinates',header=T)
+theme_set(theme_bw())
+world <- ne_coastline(scale = "small",returnclass="sf")
+#world <- ne_countries(scale = "small",returnclass="sf")
+pdf("map.pdf")
+ggplot(data=world)+geom_sf()+coord_sf(xlim =c(-10, 147), ylim = c(-32,27))+geom_point(data=coordinates,aes(x=longitude,y=latitude),cex=coordinates$reference,pch=21,bg=coordinates$colour_group)
+dev.off()
+
+### 31837 = LGT-001
+
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+coordinates<-read.table('coordinates',header=T)
+theme_set(theme_bw())
+world <- ne_coastline(scale = "small",returnclass="sf")
+#world <- ne_countries(scale = "small",returnclass="sf")
+pdf("map_31837.pdf")
+coordinates=coordinates[coordinates$X31837==1,]
+pchtype<-c()
+pchtype[coordinates$reference==0]<-21
+pchtype[coordinates$reference==1]<-22
+ggplot(data=world)+geom_sf()+coord_sf(xlim =c(-10, 147), ylim = c(-32,27))+geom_point(data=coordinates,aes(x=longitude,y=latitude),pch=pchtype,cex=3,bg=coordinates$colour_group)
+dev.off()
+
+### 34267 = LGT-103
+
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+coordinates<-read.table('coordinates',header=T)
+theme_set(theme_bw())
+world <- ne_coastline(scale = "small",returnclass="sf")
+#world <- ne_countries(scale = "small",returnclass="sf")
+pdf("map_34267.pdf")
+coordinates=coordinates[coordinates$X34267==1,]
+pchtype<-c()
+pchtype[coordinates$reference==0]<-21
+pchtype[coordinates$reference==1]<-22
+ggplot(data=world)+geom_sf()+coord_sf(xlim =c(-10, 147), ylim = c(-32,27))+geom_point(data=coordinates,aes(x=longitude,y=latitude),pch=pchtype,cex=3,bg=coordinates$colour_group)
+dev.off()
+
+### 34267b = LGT-103 (empty points)
+
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+coordinates<-read.table('coordinates',header=T)
+theme_set(theme_bw())
+world <- ne_coastline(scale = "small",returnclass="sf")
+#world <- ne_countries(scale = "small",returnclass="sf")
+pdf("map_34267b.pdf")
+coordinates=coordinates[coordinates$X34267==0,]
+pchtype<-c()
+pchtype[coordinates$reference==0]<-1
+pchtype[coordinates$reference==1]<-0
+ggplot(data=world)+geom_sf()+coord_sf(xlim =c(-10, 147), ylim = c(-32,27))+geom_point(data=coordinates,aes(x=longitude,y=latitude),pch=pchtype,cex=3,bg=coordinates$colour_group)
+dev.off()

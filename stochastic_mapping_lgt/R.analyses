@@ -1,0 +1,315 @@
+
+########################
+# RUN STOCHASTIC MAPPING
+########################
+
+
+#############################
+#SUMMARIZE STOCHASTIC MAPPING
+#############################
+
+all.times.lgt.zam1505<-read.table('all.times.lgt.zam1505',header=F)
+all.times.lgt.aus1<-read.table('all.times.lgt.aus1',header=F)
+all.times.lgt.lo4<-read.table('all.times.lgt.lo4',header=F)
+all.times.lgt.kwt<-read.table('all.times.lgt.kwt',header=F)
+all.times.lgt.mrl48<-read.table('all.times.lgt.mrl48',header=F)
+
+
+######################################
+# 1. calculate number of lgt per interval
+######################################
+
+#ZAM1505
+counts.zam1505<-data.frame()
+for(i in 1:dim(all.times.lgt.zam1505)[2]){
+    counts.zam1505[1:12,i]<-hist(as.numeric(all.times.lgt.zam1505[,i]),plot=F,breaks=0:12)$counts
+    }
+lgt.mean.zam1505<-c()
+lgt.sd.zam1505<-c()
+for(i in 1:11){
+    lgt.mean.zam1505[i]<-mean(as.numeric(counts.zam1505[i,]))
+    lgt.sd.zam1505[i]<-sd(as.numeric(counts.zam1505[i,]))
+    }
+
+#AUS1
+counts.aus1<-data.frame()
+for(i in 1:dim(all.times.lgt.aus1)[2]){
+    counts.aus1[1:12,i]<-hist(as.numeric(all.times.lgt.aus1[,i]),plot=F,breaks=0:12)$counts
+    }
+lgt.mean.aus1<-c()
+lgt.sd.aus1<-c()
+for(i in 1:11){
+    lgt.mean.aus1[i]<-mean(as.numeric(counts.aus1[i,]))
+    lgt.sd.aus1[i]<-sd(as.numeric(counts.aus1[i,]))
+    }
+
+#LO4
+counts.lo4<-data.frame()
+for(i in 1:dim(all.times.lgt.lo4)[2]){
+    counts.lo4[1:12,i]<-hist(as.numeric(all.times.lgt.lo4[,i]),plot=F,breaks=0:12)$counts
+    }
+lgt.mean.lo4<-c()
+lgt.sd.lo4<-c()
+for(i in 1:11){
+    lgt.mean.lo4[i]<-mean(as.numeric(counts.lo4[i,]))
+    lgt.sd.lo4[i]<-sd(as.numeric(counts.lo4[i,]))
+    }
+
+#KWT
+counts.kwt<-data.frame()
+for(i in 1:dim(all.times.lgt.kwt)[2]){
+    counts.kwt[1:12,i]<-hist(as.numeric(all.times.lgt.kwt[,i]),plot=F,breaks=0:12)$counts
+    }
+lgt.mean.kwt<-c()
+lgt.sd.kwt<-c()
+for(i in 1:11){
+    lgt.mean.kwt[i]<-mean(as.numeric(counts.kwt[i,]))
+    lgt.sd.kwt[i]<-sd(as.numeric(counts.kwt[i,]))
+    }
+
+#MRL48
+counts.mrl48<-data.frame()
+for(i in 1:dim(all.times.lgt.mrl48)[2]){
+    counts.mrl48[1:12,i]<-hist(as.numeric(all.times.lgt.mrl48[,i]),plot=F,breaks=0:12)$counts
+    }
+lgt.mean.mrl48<-c()
+lgt.sd.mrl48<-c()
+for(i in 1:11){
+    lgt.mean.mrl48[i]<-mean(as.numeric(counts.mrl48[i,]))
+    lgt.sd.mrl48[i]<-sd(as.numeric(counts.mrl48[i,]))
+    }
+
+####################
+# 2. count missing data
+####################
+
+missing_summary<-data.frame()
+
+missing_summary[1,1]<-"mrl48"
+missing_summary[1,2]<-dim(all.times.lgt.mrl48)[1]
+missing<-c()
+for(i in 1:dim(all.times.lgt.mrl48)[2]){
+    missing[i]<-sum(is.na(all.times.lgt.mrl48[,i]))
+    }
+missing_summary[1,3]<-median(missing)
+
+missing_summary[2,1]<-"kwt"
+missing_summary[2,2]<-dim(all.times.lgt.kwt)[1]
+missing<-c()
+for(i in 1:dim(all.times.lgt.kwt)[2]){
+    missing[i]<-sum(is.na(all.times.lgt.kwt[,i]))
+    }
+missing_summary[2,3]<-median(missing)
+
+missing_summary[3,1]<-"lo4"
+missing_summary[3,2]<-dim(all.times.lgt.lo4)[1]
+missing<-c()
+for(i in 1:dim(all.times.lgt.lo4)[2]){
+    missing[i]<-sum(is.na(all.times.lgt.lo4[,i]))
+    }
+missing_summary[3,3]<-median(missing)
+
+missing_summary[4,1]<-"zam1505"
+missing_summary[4,2]<-dim(all.times.lgt.zam1505)[1]
+missing<-c()
+for(i in 1:dim(all.times.lgt.zam1505)[2]){
+    missing[i]<-sum(is.na(all.times.lgt.zam1505[,i]))
+    }
+missing_summary[4,3]<-median(missing)
+
+missing_summary[5,1]<-"aus1"
+missing_summary[5,2]<-dim(all.times.lgt.aus1)[1]
+missing<-c()
+for(i in 1:dim(all.times.lgt.aus1)[2]){
+    missing[i]<-sum(is.na(all.times.lgt.aus1[,i]))
+    }
+missing_summary[5,3]<-median(missing)
+
+names(missing_summary)<-c("individual","total","median")
+
+missing_summary
+write.table(missing_summary,"missing_summary.txt",quote=F,row.names=F)
+
+#################################
+# 3. make regressions across repeats
+#################################
+
+vec2<-0:10+0.5
+
+slope.zam1505<-c()
+int.zam1505<-c()
+for(i in 1:dim(all.times.lgt.zam1505)[2]){
+slope.zam1505[i]<-summary(nls(counts.zam1505[1:11,i]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+int.zam1505[i]<-summary(nls(counts.zam1505[1:11,i]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+}
+
+slope.aus1<-c()
+int.aus1<-c()
+for(i in 1:dim(all.times.lgt.aus1)[2]){
+slope.aus1[i]<-summary(nls(counts.aus1[1:11,i]~y*x^vec2,start=c(x=0.6,y=2)))$coefficients[1]
+int.aus1[i]<-summary(nls(counts.aus1[1:11,i]~y*x^vec2,start=c(x=0.6,y=2)))$coefficients[2]
+}
+
+slope.lo4<-c()
+int.lo4<-c()
+for(i in 1:dim(all.times.lgt.lo4)[2]){
+slope.lo4[i]<-summary(nls(counts.lo4[1:11,i]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+int.lo4[i]<-summary(nls(counts.lo4[1:11,i]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+}
+
+slope.kwt<-c()
+int.kwt<-c()
+for(i in c(1:75,77,78,80:dim(all.times.lgt.kwt)[2])){
+slope.kwt[i]<-summary(nls(counts.kwt[1:11,i]~y*x^vec2,start=c(x=0.4,y=5)))$coefficients[1]
+int.kwt[i]<-summary(nls(counts.kwt[1:11,i]~y*x^vec2,start=c(x=0.4,y=5)))$coefficients[2]
+}
+
+slope.mrl48<-c()
+int.mrl48<-c()
+for(i in 1:dim(all.times.lgt.mrl48)[2]){
+slope.mrl48[i]<-summary(nls(counts.mrl48[1:11,i]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+int.mrl48[i]<-summary(nls(counts.mrl48[1:11,i]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+}
+
+#########################
+# 4. plot individual repeats
+#########################
+
+pdf("rate_plots_1Ma_repeats.pdf")
+par(mfrow=c(2,3))
+plot(lgt.mean.zam1505~vec2,ylim=c(0,25))
+for(i in 1:dim(all.times.lgt.zam1505)[2]){
+    points(counts.zam1505[1:11,i]~vec2,type="l")
+    }
+plot(lgt.mean.aus1~vec2,ylim=c(0,25))
+for(i in 1:dim(all.times.lgt.aus1)[2]){
+    points(counts.aus1[1:11,i]~vec2,type="l")
+    }
+plot(lgt.mean.lo4~vec2,ylim=c(0,25))
+for(i in 1:dim(all.times.lgt.lo4)[2]){
+    points(counts.lo4[1:11,i]~vec2,type="l")
+    }
+plot(lgt.mean.kwt~vec2,ylim=c(0,25))
+for(i in 1:dim(all.times.lgt.kwt)[2]){
+    points(counts.kwt[1:11,i]~vec2,type="l")
+    }
+plot(lgt.mean.mrl48~vec2,ylim=c(0,25))
+for(i in 1:dim(all.times.lgt.mrl48)[2]){
+    points(counts.mrl48[1:11,i]~vec2,type="l")
+    }
+dev.off()
+
+###########################
+# 5. plot regressions on means
+###########################
+
+vec3<-0:120/10
+
+pdf("rate_plots_1Ma.pdf")
+par(mfrow=c(2,3))
+
+plot(lgt.mean.mrl48~vec2,ylim=c(0,max(lgt.mean.zam1505+lgt.sd.zam1505)),xlab="time",ylab="observed LGT",main="MRL48")
+for(i in 1:length(vec2)){
+segments(vec2[i],lgt.mean.mrl48[i]+lgt.sd.mrl48[i],vec2[i],lgt.mean.mrl48[i]-lgt.sd.mrl48[i])
+}
+vec4<-summary(nls(lgt.mean.mrl48[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]*summary(nls(lgt.mean.mrl48[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]^vec3
+points(vec4~vec3,col="red",type="l")
+text(10,max(lgt.mean.zam1505)+2,paste("Gains: ",round(summary(nls(lgt.mean.mrl48[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2],digit=2),sep=""),adj=1)
+text(10,max(lgt.mean.zam1505),paste("[",round(quantile(int.mrl48,c(0.025))[[1]],digit=2),"-",round(quantile(int.mrl48,c(0.975))[[1]],digit=2),"]"),adj=1)
+text(10,max(lgt.mean.zam1505)-3,paste("Losses:",round(1-summary(nls(lgt.mean.mrl48[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1],digit=2),sep=""),adj=1)
+text(10,max(lgt.mean.zam1505)-5,paste("[",round(1-quantile(slope.mrl48,c(0.975))[[1]],digit=2),"-",round(1-quantile(slope.mrl48,c(0.025))[[1]],digit=2),"]"),adj=1)
+
+plot(lgt.mean.kwt~vec2,ylim=c(0,max(lgt.mean.zam1505+lgt.sd.zam1505)),xlab="time",ylab="observed LGT",main="KWT3")
+for(i in 1:length(vec2)){
+segments(vec2[i],lgt.mean.kwt[i]+lgt.sd.kwt[i],vec2[i],lgt.mean.kwt[i]-lgt.sd.kwt[i])
+}
+vec4<-summary(nls(lgt.mean.kwt[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]*summary(nls(lgt.mean.kwt[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]^vec3
+points(vec4~vec3,col="red",type="l")
+text(10,max(lgt.mean.zam1505)+2,paste("Gains: ",round(summary(nls(lgt.mean.kwt[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505),paste("[",round(quantile(int.kwt,c(0.025),na.rm=T)[[1]],digit=2),"-",round(quantile(int.kwt,c(0.975),na.rm=T)[[1]],digit=2),"]"),adj=1)
+text(10,max(lgt.mean.zam1505)-3,paste("Losses: ",round(1-summary(nls(lgt.mean.kwt[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505)-5,paste("[",round(1-quantile(slope.kwt,c(0.975),na.rm=T)[[1]],digit=2),"-",round(1-quantile(slope.kwt,c(0.025),na.rm=T)[[1]],digit=2),"]"),adj=1)
+
+plot(lgt.mean.lo4~vec2,ylim=c(0,max(lgt.mean.zam1505+lgt.sd.zam1505)),xlab="time",ylab="observed LGT",main="L04B")
+for(i in 1:length(vec2)){
+segments(vec2[i],lgt.mean.lo4[i]+lgt.sd.lo4[i],vec2[i],lgt.mean.lo4[i]-lgt.sd.lo4[i])
+}
+vec4<-summary(nls(lgt.mean.lo4[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]*summary(nls(lgt.mean.lo4[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]^vec3
+points(vec4~vec3,col="red",type="l")
+text(10,max(lgt.mean.zam1505)+2,paste("Gains: ",round(summary(nls(lgt.mean.lo4[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505),paste("[",round(quantile(int.lo4,c(0.025),na.rm=T)[[1]],digit=2),"-",round(quantile(int.lo4,c(0.975),na.rm=T)[[1]],digit=2),"]"),adj=1)
+text(10,max(lgt.mean.zam1505)-3,paste("Losses: ",round(1-summary(nls(lgt.mean.lo4[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505)-5,paste("[",round(1-quantile(slope.lo4,c(0.975),na.rm=T)[[1]],digit=2),"-",round(1-quantile(slope.lo4,c(0.0255),na.rm=T)[[1]],digit=2),"]"),adj=1)
+
+plot(lgt.mean.zam1505~vec2,ylim=c(0,max(lgt.mean.zam1505+lgt.sd.zam1505)),xlab="time",ylab="observed LGT",main="ZAM1505")
+for(i in 1:length(vec2)){
+segments(vec2[i],lgt.mean.zam1505[i]+lgt.sd.zam1505[i],vec2[i],lgt.mean.zam1505[i]-lgt.sd.zam1505[i])
+}
+vec4<-summary(nls(lgt.mean.zam1505[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]*summary(nls(lgt.mean.zam1505[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]^vec3
+points(vec4~vec3,col="red",type="l")
+text(10,max(lgt.mean.zam1505)+2,paste("Gains: ",round(summary(nls(lgt.mean.zam1505[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505),paste("[",round(quantile(int.zam1505,c(0.025))[[1]],digit=2),"-",round(quantile(int.zam1505,c(0.975))[[1]],digit=2),"]"),adj=1)
+text(10,max(lgt.mean.zam1505)-3,paste("Losses: ",round(1-summary(nls(lgt.mean.zam1505[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505)-5,paste("[",round(1-quantile(slope.zam1505,c(0.975))[[1]],digit=2),"-",round(1-quantile(slope.zam1505,c(0.025))[[1]],digit=2),"]"),adj=1)
+
+plot(lgt.mean.aus1~vec2,ylim=c(0,max(lgt.mean.zam1505+lgt.sd.zam1505)),xlab="time",ylab="observed LGT",main="AUS1")
+for(i in 1:length(vec2)){
+segments(vec2[i],lgt.mean.aus1[i]+lgt.sd.aus1[i],vec2[i],lgt.mean.aus1[i]-lgt.sd.aus1[i])
+}
+vec4<-summary(nls(lgt.mean.aus1[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]*summary(nls(lgt.mean.aus1[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]^vec3
+points(vec4~vec3,col="red",type="l")
+text(10,max(lgt.mean.zam1505)+2,paste("Gains: ",round(summary(nls(lgt.mean.aus1[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505),paste("[",round(quantile(int.aus1,c(0.025))[[1]],digit=2),"-",round(quantile(int.aus1,c(0.975))[[1]],digit=2),"]"),adj=1)
+text(10,max(lgt.mean.zam1505)-3,paste("Losses: ",round(1-summary(nls(lgt.mean.aus1[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1],digit=2)),adj=1)
+text(10,max(lgt.mean.zam1505)-5,paste("[",round(1-quantile(slope.aus1,c(0.975))[[1]],digit=2),"-",round(1-quantile(slope.aus1,c(0.025))[[1]],digit=2),"]"),adj=1)
+
+dev.off()
+
+
+#######
+# 6. plot estimates
+#######
+
+pdf("summary.pdf")
+par(mfrow=c(2,3))
+# plot gains
+gains<-c()
+gains[1]<-summary(nls(lgt.mean.mrl48[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+gains[2]<-summary(nls(lgt.mean.kwt[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+gains[3]<-summary(nls(lgt.mean.lo4[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+gains[4]<-summary(nls(lgt.mean.zam1505[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+gains[5]<-summary(nls(lgt.mean.aus1[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]
+plot(gains~c(1:5),ylim=c(0,28),pch=16,cex=2)
+segments(1,quantile(int.mrl48,c(0.025))[[1]],1,quantile(int.mrl48,c(0.975))[[1]])
+segments(2,quantile(int.kwt,c(0.025),na.rm=T)[[1]],2,quantile(int.kwt,c(0.975),na.rm=T)[[1]])
+segments(3,quantile(int.lo4,c(0.025))[[1]],3,quantile(int.lo4,c(0.975))[[1]])
+segments(4,quantile(int.zam1505,c(0.025))[[1]],4,quantile(int.zam1505,c(0.975))[[1]])
+segments(5,quantile(int.aus1,c(0.025))[[1]],5,quantile(int.aus1,c(0.975))[[1]])
+
+# plot gains theoretical
+gains2<-c()
+gains2[1]<-summary(nls(lgt.mean.mrl48[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]/(missing_summary$total[1]-missing_summary$median[1])*missing_summary$total[1]
+gains2[2]<-summary(nls(lgt.mean.kwt[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]/(missing_summary$total[2]-missing_summary$median[2])*missing_summary$total[2]
+gains2[3]<-summary(nls(lgt.mean.lo4[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]/(missing_summary$total[3]-missing_summary$median[3])*missing_summary$total[3]
+gains2[4]<-summary(nls(lgt.mean.zam1505[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]/(missing_summary$total[4]-missing_summary$median[4])*missing_summary$total[4]
+gains2[5]<-summary(nls(lgt.mean.aus1[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[2]/(missing_summary$total[5]-missing_summary$median[5])*missing_summary$total[5]
+points(gains2~c(1:5),ylim=c(0,28),pch=16,cex=2,col="grey")
+
+# plot losses
+losses<-c()
+losses[1]<-1-summary(nls(lgt.mean.mrl48[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+losses[2]<-1-summary(nls(lgt.mean.kwt[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+losses[3]<-1-summary(nls(lgt.mean.lo4[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+losses[4]<-1-summary(nls(lgt.mean.zam1505[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+losses[5]<-1-summary(nls(lgt.mean.aus1[1:11]~y*x^vec2,start=c(x=0.8,y=5)))$coefficients[1]
+plot(losses~c(1:5),ylim=c(0,1),pch=16,cex=2)
+segments(1,1-quantile(slope.mrl48,c(0.025))[[1]],1,1-quantile(slope.mrl48,c(0.975))[[1]])
+segments(2,1-quantile(slope.kwt,c(0.025),na.rm=T)[[1]],2,1-quantile(slope.kwt,c(0.975),na.rm=T)[[1]])
+segments(3,1-quantile(slope.lo4,c(0.025))[[1]],3,1-quantile(slope.lo4,c(0.975))[[1]])
+segments(4,1-quantile(slope.zam1505,c(0.025))[[1]],4,1-quantile(slope.zam1505,c(0.975))[[1]])
+segments(5,1-quantile(slope.aus1,c(0.025))[[1]],5,1-quantile(slope.aus1,c(0.975))[[1]])
+
+# plot total
+plot(missing_summary$total~c(1:5),ylim=c(0,100),cex=2,pch=16)
+
+dev.off()

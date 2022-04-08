@@ -1,0 +1,114 @@
+library('ape')
+library('fossil')
+
+datacoor<-read.table('coordinates',header=T)
+
+########################
+# 1. geographical distances
+########################
+
+geodist<-matrix(nrow=length(datacoor$individual),ncol=length(datacoor$individual))
+for(i in 1:length(datacoor$individual)){
+    for(j in 1:length(datacoor$individual)){
+        if(i==j){
+            geodist[i,j]<-0
+            }
+        if(i!=j){
+            geodist[i,j]<-earth.dist(datacoor[datacoor$individual==datacoor$individual[i] | datacoor$individual==datacoor$individual[j],2:3])
+            }
+        }
+    }
+
+#######################
+# 2. divergence times
+#######################
+
+tree.all<-read.nexus('consensus_trees.txt')
+
+divdist<-matrix(nrow=length(datacoor$individual),ncol=length(datacoor$individual))
+for(i in 1:length(datacoor$individual)){
+    for(j in 1:length(datacoor$individual)){
+        if(i==j){
+            divdist[i,j]<-0
+            }
+        if(i!=j){
+            divprov<-12
+            for(k in 1:length(tree.all)){
+                divk<-sum(drop.tip(tree.all[[k]],(1:length(tree.all[[k]]$tip.label))[c(-which(tree.all[[k]]$tip.label==datacoor$individual[i]),-which(tree.all[[k]]$tip.label==datacoor$individual[j]))])$edge.length)/2
+                if(divk<divprov){
+                    divprov<-divk
+                    }
+                }
+            divdist[i,j]<-divk
+            }
+        }
+    }
+
+#############
+# 3. LGT distances
+#############
+
+datalgt<-read.table('data_lgt',header=T)
+
+lgtdist<-matrix(nrow=length(datacoor$individual),ncol=length(datacoor$individual))
+for(i in 1:length(datacoor$individual)){
+    for(j in 1:length(datacoor$individual)){
+        if(i==j){
+            lgtdist[i,j]<-0
+            }
+        if(i!=j){
+            lgtdist[i,j]<-sum(datalgt[which(datalgt[,1]==datacoor$individual[i]),2:dim(datalgt)[2]]*datalgt[which(datalgt[,1]==datacoor$individual[j]),2:dim(datalgt)[2]])
+            }
+        }
+    }
+
+
+##################
+# 4. Mantel test
+##################
+
+# lgt vs divergence
+
+permu<-c()
+for(i in 1:9999){
+newvec<-sample(1:dim(lgtdist)[1])
+newmat<-as.matrix(as.data.frame(lgtdist)[newvec,newvec])
+permu[i]<-cor.test(newmat[row(lgtdist)>col(lgtdist)],geodist[row(lgtdist)>col(lgtdist)],method=c("spearman"))$estimate
+}
+pvalue<-(length(permu[permu<cor.test(lgtdist[row(lgtdist)>col(lgtdist)],divdist[row(lgtdist)>col(lgtdist)],method=c("spearman"))$estimate])+1)/(9999+1)
+
+
+pdf("plots.pdf",width=11,height=6)
+par(mfrow=c(1,2))
+plot(as.vector(lgtdist[row(lgtdist)>col(lgtdist)])~as.vector(divdist[row(lgtdist)>col(lgtdist)]),xlab="divergence time",ylab="LGT overlap")
+regcoeff<-summary(lm(as.vector(lgtdist[row(lgtdist)>col(lgtdist)])~as.vector(divdist[row(lgtdist)>col(lgtdist)])))$coefficients
+segments(0,regcoeff[1,1],11.46,regcoeff[2,1]*11.46+regcoeff[1,1],col="red")
+regr2<-summary(lm(as.vector(lgtdist[row(lgtdist)>col(lgtdist)])~as.vector(divdist[row(lgtdist)>col(lgtdist)])))$adj.r.squared
+
+text(5,75,paste("p = ",pvalue),pos=4)
+text(5,70,paste("R2 = ",round(100*regr2)/100),pos=4)
+
+
+# residuals vs geo
+
+lgtdivres<-summary(lm(as.vector(lgtdist[row(lgtdist)>col(lgtdist)])~as.vector(divdist[row(lgtdist)>col(lgtdist)])))$residuals
+
+permu<-c()
+for(i in 1:9999){
+newvec<-sample(1:dim(geodist)[1])
+newmat<-as.matrix(as.data.frame(geodist)[newvec,newvec])
+permu[i]<-cor.test(lgtdivres,newmat[row(newmat)>col(newmat)],method=c("spearman"))$estimate
+}
+pvalue<-(length(permu[permu<cor.test(lgtdivres,geodist[row(geodist)>col(geodist)],method=c("spearman"))$estimate])+1)/(9999+1)
+
+
+
+plot(lgtdivres~as.vector(geodist[row(lgtdist)>col(lgtdist)]),xlab="geographical distance",ylab="residuals(LGT vs divergence)")
+regcoeff<-summary(lm(lgtdivres~as.vector(geodist[row(geodist)>col(geodist)])))$coefficients
+segments(0,regcoeff[1,1],15800,regcoeff[2,1]*15800+regcoeff[1,1],col="red")
+regr2<-summary(lm(lgtdivres~as.vector(geodist[row(geodist)>col(geodist)])))$adj.r.squared
+text(7000,47,paste("p = ",pvalue),pos=4)
+text(7000,42,paste("R2 = ",round(100*regr2)/100),pos=4)
+dev.off()
+
+
