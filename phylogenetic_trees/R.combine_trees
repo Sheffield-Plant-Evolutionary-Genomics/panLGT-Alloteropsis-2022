@@ -1,9 +1,0 @@
-library(ape)
-for(j in 0:99){
-trees1<-read.nexus(paste("repeat.",j,".run1/species.trees",sep=""))[-1:-3001]
-trees2<-read.nexus(paste("repeat.",j,".run2/species.trees",sep=""))[-1:-3001]
-trees3<-c(trees1,trees2)
-write.nexus(trees3,file=paste("summary_trees/repeat.",j,".trees",sep=""))
-}
-
-

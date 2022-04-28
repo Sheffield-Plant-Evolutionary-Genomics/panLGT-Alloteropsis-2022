@@ -1,6 +1,0 @@
-library(ape)
-library(phangorn)
-tree<-read.nexus('consensus_trees.txt')
-pdf("densitree.pdf",useDingbat=F)
-densiTree(tree,width=0.5,col="black",lty=1,alpha=0.1)
-dev.off()
