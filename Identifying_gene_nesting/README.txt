@@ -1,9 +1,15 @@
-The folder contains 12 scripts that were used to detect and validate LGT in the five reference genomes.
+## ID sister relationships
 
-#Generate alignments and build trees from protein-coding sequences # 2 files
-The file 'cds_to_trees.sh' contains all the commands used to build alignments of orthogroups from a set of CDS and to build trees from the resulting alignments. Dependencies: 'unwrap.pl', Blastn, mafft, phyML and SMS.
+This process gene trees and idetifies the sister branch/clade to a query sequence, and then their combined sister branch/clade. It also reports the bootstrap values.
 
-#Identify Alloteropsis phylogenetic placement for each gene and filter midpoint-rooted trees compatible with a LGT scenario # 2 files
+
+## Step 1: sister relation ships for all query sequences
+
+to un the scrip
+
+perl id_sister.pl Direcoty_of_gene_trees query_sequence_ID
+
+The clades are defined based on the sequence names within the perl script itself and is set up at present for use in this study. 
 
 The file 'id_sister.pl' contains a Perl script that produces a tabular file reporting the group identity of the sequence sister to the Alloteropsis gene and the one of their combined sister group. 
 The file 'tree_filtering_1.pl' contains a Perl script to filter out automatically no-LGT trees based on the table produced by the previous script.
